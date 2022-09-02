@@ -1,4 +1,51 @@
+WindowManager:
+    LoginScreen:
+    MainSelectScreen:
 
 <LoginScreen>:
-    GridLayout:
+    name: "LoginScreen"
+    BoxLayout:
         
+        
+        spacing: '0'
+        position_hint: {'center_x':0.5, 'center_y':0.5}
+        
+
+        orientation: 'vertical'
+        Label:
+            text: "Username"
+            font_size: 25
+            size: self.texture_size
+            
+        TextInput:
+            id: UsernameBox
+            width: 100
+            height: 50
+            text: "Enter Username"
+            
+        Label:
+            text: "Password"
+            font_size: 25
+            size: self.texture_size
+            
+        TextInput:
+            
+            width: 100
+            height: 50
+            text: "Enter Password"
+            id: PasswordBox 
+
+        Button:
+            text: "Submit"
+            font_size: 25
+            size: self.texture_size
+            on_press:
+                root.login()
+            
+
+        
+<MainSelectScreen>:
+    name: "MainSelectScreen"
+    BoxLayout:
+        Label:
+            text: "Main Select"

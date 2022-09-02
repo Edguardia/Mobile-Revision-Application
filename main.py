@@ -1,36 +1,44 @@
+from multiprocessing import Manager
 import kivy
-
+from kivy.core.window import Window
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
+from kivy.uix.screenmanager import Screen, ScreenManager
 
-"""
-class LoginScreen(GridLayout):
 
-    def __init__(self, **kwargs):
-        super(LoginScreen, self).__init__(**kwargs)
-        self.cols = 1
-        self.add_widget(Label(text="User Name"))
-        self.username = TextInput(multiline=False)
-        self.add_widget(self.username)
-        self.add_widget(Label(text="Password"))
-        self.password = TextInput(multiline=False)
-        self.add_widget(self.password)
-"""
+# Window.size = (1920,1080)
 
-class LoginScreen(Widget):
+
+class LoginScreen(Screen):
+    def login(self):
+        if self.ids.UsernameBox.text == "Enter Username":
+            if self.ids.PasswordBox.text == "Enter Password":
+                print("Authenticated")
+
     pass
 
+class MainSelectScreen(Screen):
+    pass
 
-
+class WindowManager(ScreenManager):
+    pass
 
 
 
 class MobileApp(App):
     def build(self):
-        return LoginScreen()
+        WindowManager()
+
+
+        
+
+       
+    
+    
 
 if __name__ == '__main__':
     MobileApp().run()
