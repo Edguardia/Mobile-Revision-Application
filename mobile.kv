@@ -1,6 +1,9 @@
 WindowManager:
     LoginScreen:
     MainSelectScreen:
+    FailedAuthentication:
+    AddQuestionScreen:
+    DeleteQuestionScreen:
 
 <LoginScreen>:
     name: "LoginScreen"
@@ -9,9 +12,8 @@ WindowManager:
         
         spacing: '0'
         position_hint: {'center_x':0.5, 'center_y':0.5}
-        
-
         orientation: 'vertical'
+
         Label:
             text: "Username"
             font_size: 25
@@ -41,11 +43,66 @@ WindowManager:
             size: self.texture_size
             on_press:
                 root.login()
-            
+                
 
         
+
+
 <MainSelectScreen>:
     name: "MainSelectScreen"
     BoxLayout:
+        spacing: '0'
+        position_hint: {'center_x':0.5, 'center_y':0.5}
+        orientation: 'vertical'
         Label:
             text: "Main Select"
+
+        Button:
+            text:'Add Question'
+            on_press: root.addQuestion() 
+
+        Button:
+            text: "Delete Question"
+            on_press: root.delQuestion()
+
+
+<AddQuestionScreen>:
+    name: "AddQuestionScreen"
+    BoxLayout:
+        spacing: '0'
+        position_hint: {'center_x':0.5, 'center_y':0.5}
+        orientation: 'vertical'
+        Label:
+            text:'What is the question?'
+        TextInput:
+            width: 100
+            height: 50
+            text: "Enter Question"
+            id: "question"
+
+        Label:
+            text: "What is the answer"
+        TextInput:
+            width: 100
+            height: 50
+            text:'Enter Answer'
+            id: "answer"
+
+        Button:
+            text: 'Submit'
+            on_press: root.uploadQuestion()
+
+<DeleteQuestionScreen>:
+    name: "DeleteQuestionScreen"
+
+<AnsweringScreen>:
+    name: "AnsweringScreen"
+
+<FailedAuthentication>
+    name: "FailedAuthentication"
+
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            text: "Incorrect Username or Password, Please try again"
+
