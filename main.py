@@ -10,6 +10,9 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.clock import Clock
+from kivy.properties import ObjectProperty
+from kivy.lang.builder import Builder
+
 
 # Window.size = (1920,1080)
 
@@ -18,8 +21,8 @@ class LoginScreen(Screen):
     
 
     def login(self):
-        if self.ids.UsernameBox.text == "Enter Username":
-            if self.ids.PasswordBox.text == "Enter Password":
+        if self.ids.UsernameBox.text == "Edward":
+            if self.ids.PasswordBox.text == "1234":
                 print("Authenticated")
                 self.manager.current = "MainSelectScreen"
             else:
@@ -58,17 +61,35 @@ class DeleteQuestionScreen(Screen):
     pass
 
 class WindowManager(ScreenManager):
+    
+    
     pass
+    
+    
 
 
 
 
-
+sm=Builder.load_file("mobile.kv")
 class MobileApp(App):
+    
     def build(self):
         WindowManager()
+        return sm
         
-    
+    def __init__(self, **kwargs):
+        super(MobileApp, self).__init__(**kwargs)
+        Window.bind(on_keyboard=self._key_handler)
+
+    def _key_handler(self, instance, key, *args):
+        if key is 27:
+            self.set_previous_screen()
+            return True
+
+    def set_previous_screen(self):
+        if WindowManager.current != "LoginScreen":
+            WindowManager.direction = "left"
+            sm.current = "MainSelectScreen"
 
         
 
@@ -78,8 +99,4 @@ class MobileApp(App):
 
 if __name__ == '__main__':
     
-    
-    
-        
-
     MobileApp().run()
