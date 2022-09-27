@@ -10,19 +10,44 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.clock import Clock
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, ListProperty, StringProperty
 from kivy.lang.builder import Builder
-
+from kivy.uix.dropdown import DropDown
+from kivy.uix.button import Button
+import mysql.connector
 
 # Window.size = (1920,1080)
 
+databaseConfig = {
+    'user': 'MobileRevisionApp',
+    'password': 'password',
+    'host': '127.0.0.1',
+    'database': 'mobileapp',
+    'raise_on_warnings': True
+}
+
+cnx = mysql.connector.connect(**databaseConfig)
+cursor = cnx.cursor()
+
+query = ("SELECT username, password FROM user")
+cursor.execute(query)
+usernames = []
+passwords = []
+for (username, password) in cursor:
+    usernames.append(username)
+    passwords.append(password)
+
+    
+
+cursor.close()
+cnx.close()
 
 class LoginScreen(Screen):
     
 
     def login(self):
-        if self.ids.UsernameBox.text == "Edward":
-            if self.ids.PasswordBox.text == "1234":
+        if self.ids.UsernameBox.text in usernames:
+            if self.ids.PasswordBox.text in passwords:
                 print("Authenticated")
                 self.manager.current = "MainSelectScreen"
             else:
@@ -87,8 +112,12 @@ class MobileApp(App):
             return True
 
     def set_previous_screen(self):
-        if WindowManager.current != "LoginScreen":
-            WindowManager.direction = "left"
+        if sm.current == "MainSelectScreen":
+            sm.direction = "left"
+            sm.current ="LoginScreen"
+
+        elif sm.current != "LoginScreen":
+            sm.direction = "left"
             sm.current = "MainSelectScreen"
 
         

@@ -94,6 +94,35 @@ WindowManager:
 
 <DeleteQuestionScreen>:
     name: "DeleteQuestionScreen"
+	BoxLayout:
+        spacing: '0'
+        position_hint: {'center_x':0.5, 'center_y':0.5}
+        orientation: 'vertical'
+        Label:
+            text: "Delete"
+		Button:
+            id: btn
+            text: 'Press'
+            on_release: dropdown.open(self)
+            
+
+            height: '48dp'
+
+		DropDown:
+            id: dropdown
+            Button:
+                text: "Question1"
+                size_hint_y: None
+                height: 44
+                
+            Label:
+                text: 'Unselectable item'
+                size_hint_y: None
+                height: 44
+            Button:
+                text: "Question2"
+                size_hint_y: None
+                height: 44
 
 <AnsweringScreen>:
     name: "AnsweringScreen"
