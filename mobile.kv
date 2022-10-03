@@ -4,6 +4,7 @@ WindowManager:
     FailedAuthentication:
     AddQuestionScreen:
     DeleteQuestionScreen:
+    AnsweringScreen:
 
 <LoginScreen>:
     name: "LoginScreen"
@@ -58,6 +59,11 @@ WindowManager:
             text: "Main Select"
 
         Button:
+            text:"Answer Questions"
+            on_press: root.answerQuestion()
+                
+
+        Button:
             text:'Add Question'
             on_press: root.addQuestion() 
 
@@ -75,18 +81,20 @@ WindowManager:
         Label:
             text:'What is the question?'
         TextInput:
+            id: QuestionBox
             width: 100
             height: 50
             text: "Enter Question"
-            id: "question"
+            
 
         Label:
             text: "What is the answer"
         TextInput:
+            id: AnswerBox
             width: 100
             height: 50
             text:'Enter Answer'
-            id: "answer"
+            
 
         Button:
             text: 'Submit'
@@ -126,6 +134,35 @@ WindowManager:
 
 <AnsweringScreen>:
     name: "AnsweringScreen"
+    BoxLayout:
+        spacing: '0'
+        position_hint: {'center_x':0.5, 'center_y':0.5}
+        orientation: 'vertical'
+        Label:
+            id: questiontoAnswer
+            text: "Refresh"
+        GridLayout:
+            rows:2
+            cols:2
+            padding:10
+            spacing:10
+            Button:
+                id: answer0
+                on_press: root.checkAns("0")
+            Button:
+                id: answer1
+                on_press: root.checkAns("1")
+            Button:
+                id: answer2
+                on_press: root.checkAns("2")
+            Button:
+                id: answer3
+                on_press: root.checkAns("3")
+
+        
+
+    
+        
 
 <FailedAuthentication>
     name: "FailedAuthentication"

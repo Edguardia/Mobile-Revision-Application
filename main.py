@@ -15,17 +15,27 @@ from kivy.lang.builder import Builder
 from kivy.uix.dropdown import DropDown
 from kivy.uix.button import Button
 import mysql.connector
+import random
 
 # Window.size = (1920,1080)
 
 databaseConfig = {
     'user': 'MobileRevisionApp',
-    'password': 'password',
-    'host': '127.0.0.1',
+    'password': '3EhaR02J0*Vg',
+    'host': '82.14.184.252',
+    'port': '3306',
     'database': 'mobileapp',
     'raise_on_warnings': True
 }
-
+"""
+databaseConfig = {
+    'user': 'sql8522668',
+    'password': 'FQj7wMyXws',
+    'host': 'sql8.freemysqlhosting.net',
+    'database': 'sql8522668',
+    'raise_on_warnings': True
+}
+"""
 cnx = mysql.connector.connect(**databaseConfig)
 cursor = cnx.cursor()
 
@@ -70,14 +80,88 @@ class MainSelectScreen(Screen):
     def delQuestion(self):
         self.manager.current = "DeleteQuestionScreen"
     
+    def answerQuestion(self):
+        self.manager.current = "AnsweringScreen"
     pass
 
 class FailedAuthentication(Screen):
     pass
 
+class AnsweringScreen(Screen):
+    #stores id's of each button for answering
+    global group
+    group=["answer0", "answer1", "answer2", "answer3"]
+    
+    
+
+    def getQuestion(self):
+        questions = []
+        answers = []
+        cnx = mysql.connector.connect(**databaseConfig)
+        cursor = cnx.cursor()
+        query = ("SELECT question, answer FROM questions")
+        cursor.execute(query)
+        for (question, answer) in cursor:
+            questions.append(question)
+            answers.append(answer)
+
+        cursor.close()
+        cnx.close()
+        quesansDict = dict(zip(questions, answers))
+        questionSelected = random.randrange(0, len(questions))
+        
+        self.ids.questiontoAnswer.text = str(questions[questionSelected])
+        global correctAnswer
+        correctAnswer = str(quesansDict[questions[questionSelected]])
+
+        for i in range(0,4):
+            self.ids[group[i]].text = answers[random.randint(0, (len(answers)-1))]
+
+        randomed = random.randint(0,3)
+        self.ids[group[randomed]].text = quesansDict[questions[questionSelected]]
+
+        
+
+    def checkAns(self, button):
+        """
+        if self.ids[group[int(button)]].text == correctAnswer:
+            userScore == 0
+            userScore+=1
+            print(userScore)
+        else:
+            pass
+        """
+
+    pass
+
+
+        
+
+
+    def on_enter(self):
+        self.getQuestion()
+       
+
+    
+
+
+    pass
+
+
 
 class AddQuestionScreen(Screen):
     def uploadQuestion(self):
+        question = self.ids.QuestionBox.text
+        answer = self.ids.AnswerBox.text
+        print(question, answer)
+        cnx = mysql.connector.connect(**databaseConfig)
+        cursor = cnx.cursor()
+        query = ("INSERT INTO questions (question, answer) VALUES (%s, %s)")
+        val = (question, answer)
+        cursor.execute(query, val)
+        cnx.commit()
+        cursor.close()
+        cnx.close()
         return
 
     pass
