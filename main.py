@@ -1,3 +1,5 @@
+
+import sys
 from ast import main
 from multiprocessing import Manager
 import kivy
@@ -17,8 +19,10 @@ from kivy.uix.button import Button
 import mysql.connector
 import random
 
+
 # Window.size = (1920,1080)
 
+#Stores database login
 databaseConfig = {
     'user': 'MobileRevisionApp',
     'password': '3EhaR02J0*Vg',
@@ -27,16 +31,14 @@ databaseConfig = {
     'database': 'mobileapp',
     'raise_on_warnings': True
 }
-"""
-databaseConfig = {
-    'user': 'sql8522668',
-    'password': 'FQj7wMyXws',
-    'host': 'sql8.freemysqlhosting.net',
-    'database': 'sql8522668',
-    'raise_on_warnings': True
-}
-"""
+#Opens Connection to Database
 cnx = mysql.connector.connect(**databaseConfig)
+
+
+
+
+#Gets login information from database and stores to lists
+
 cursor = cnx.cursor()
 
 query = ("SELECT username, password FROM user")
@@ -50,19 +52,19 @@ for (username, password) in cursor:
     
 
 cursor.close()
-cnx.close()
 
+#Class for the login screen which contains functions to check your username and password
 class LoginScreen(Screen):
     
-
+#Checks password inputted against stored list
     def login(self):
         if self.ids.UsernameBox.text in usernames:
             if self.ids.PasswordBox.text in passwords:
                 print("Authenticated")
-                self.manager.current = "MainSelectScreen"
+                self.manager.current = "MainSelectScreen"  #If authenticated moves to main screen
             else:
                 self.manager.current = "FailedAuthentication"
-                Clock.schedule_once(self.loginReset, 5)
+                Clock.schedule_once(self.loginReset, 5) #if authentication fails stick on a failure screen for 5 seconds
         else:
             self.manager.current = "FailedAuthentication"
             Clock.schedule_once(self.loginReset, 5)
@@ -73,31 +75,35 @@ class LoginScreen(Screen):
     
     pass
 
+
+#Class for screen with all main options
 class MainSelectScreen(Screen):
-    def addQuestion(self):
+    def addQuestion(self): #Selects screen to add questions
         self.manager.current = "AddQuestionScreen"
     
-    def delQuestion(self):
+    def delQuestion(self): #Selects screen to delete questions
         self.manager.current = "DeleteQuestionScreen"
     
-    def answerQuestion(self):
+    def answerQuestion(self): #Selects screen to answer questions
         self.manager.current = "AnsweringScreen"
     pass
 
+#Empty Screen Class for failed authentication
 class FailedAuthentication(Screen):
     pass
 
+#Class for the answering questions screen
 class AnsweringScreen(Screen):
     #stores id's of each button for answering
     global group
     group=["answer0", "answer1", "answer2", "answer3"]
     
     
-
+    #Gets questions from database and displays it
     def getQuestion(self):
         questions = []
         answers = []
-        cnx = mysql.connector.connect(**databaseConfig)
+        #Database query for getting questions and answers
         cursor = cnx.cursor()
         query = ("SELECT question, answer FROM questions")
         cursor.execute(query)
@@ -106,38 +112,38 @@ class AnsweringScreen(Screen):
             answers.append(answer)
 
         cursor.close()
-        cnx.close()
+        
         quesansDict = dict(zip(questions, answers))
         questionSelected = random.randrange(0, len(questions))
         
         self.ids.questiontoAnswer.text = str(questions[questionSelected])
-        global correctAnswer
+        
         correctAnswer = str(quesansDict[questions[questionSelected]])
-
+        #Selects 4 other multi choice answers
         for i in range(0,4):
             self.ids[group[i]].text = answers[random.randint(0, (len(answers)-1))]
-
+        #Puts multi choice selected answers into box
         randomed = random.randint(0,3)
         self.ids[group[randomed]].text = quesansDict[questions[questionSelected]]
 
         
-
+    #Checks if the sumbitted answer is the correct answer
     def checkAns(self, button):
-        """
-        if self.ids[group[int(button)]].text == correctAnswer:
+        
+        if self.ids[group[int(button)]].text == AnsweringScreen.getQuestion.correctAnswer:
             userScore == 0
             userScore+=1
             print(userScore)
         else:
+            print("Incorrect Answer")
             pass
-        """
-
-    pass
+        
+    
 
 
         
 
-
+    #Makes sure that the getQuestion function runs whenever the screen in selected
     def on_enter(self):
         self.getQuestion()
        
@@ -148,27 +154,54 @@ class AnsweringScreen(Screen):
     pass
 
 
-
+#Class for the screen where you add questions
 class AddQuestionScreen(Screen):
     def uploadQuestion(self):
         question = self.ids.QuestionBox.text
         answer = self.ids.AnswerBox.text
         print(question, answer)
-        cnx = mysql.connector.connect(**databaseConfig)
+       #Database query to upload the inputted question
         cursor = cnx.cursor()
         query = ("INSERT INTO questions (question, answer) VALUES (%s, %s)")
         val = (question, answer)
         cursor.execute(query, val)
         cnx.commit()
         cursor.close()
-        cnx.close()
+        
         return
 
     pass
-
+#Class for deleting the questions
 class DeleteQuestionScreen(Screen):
     pass
+    def retrieveQuestions(self):
+        
+        cursor = cnx.cursor()
+        query = ("SELECT question from questions")
+        cursor.execute(query)
+        questions = []
+        for question in cursor:
+            questions.append(question)
 
+        cursor.close()
+        
+
+        self.dropdown = DropDown()
+        for question in questions:
+            print(question)
+            btn = Button(text=str(question), size_hint_y=0, height=20)
+            btn.bind(on_release=lambda btn:self.dropdown.select(btn.text))
+            self.dropdown.add_widget(Button)
+            self.ids.button_release.bind(on_release=self.dropdown.open)
+    
+    def on_enter(self):
+        self.retrieveQuestions()
+      
+
+class ErrorScreen(Screen):
+    pass
+
+#Class that contains the manager for all seperate screens
 class WindowManager(ScreenManager):
     
     
@@ -178,25 +211,25 @@ class WindowManager(ScreenManager):
 
 
 
-
+#Loads the .kv file which contains GUI preferences
 sm=Builder.load_file("mobile.kv")
 class MobileApp(App):
-    
+    #Creates the application screen
     def build(self):
         WindowManager()
         return sm
-        
+    #Sets the app up for keyboard inputs
     def __init__(self, **kwargs):
         super(MobileApp, self).__init__(**kwargs)
         Window.bind(on_keyboard=self._key_handler)
-
+    #If escape or back is pressed run set_previous_screen
     def _key_handler(self, instance, key, *args):
         if key is 27:
             self.set_previous_screen()
             return True
-
+    #Changes screen to go back to main select screen or to login screen
     def set_previous_screen(self):
-        if sm.current == "MainSelectScreen":
+        if sm.current == "MainSelectScreen" or sm.current == "FailedAuthentication":
             sm.direction = "left"
             sm.current ="LoginScreen"
 

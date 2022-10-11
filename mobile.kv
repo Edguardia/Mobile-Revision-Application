@@ -1,3 +1,4 @@
+#WindowManager houses all the screens and allows for changing between them
 WindowManager:
     LoginScreen:
     MainSelectScreen:
@@ -5,7 +6,9 @@ WindowManager:
     AddQuestionScreen:
     DeleteQuestionScreen:
     AnsweringScreen:
+    ErrorScreen:
 
+#LoginScreen has a button and two inputs for your username and password
 <LoginScreen>:
     name: "LoginScreen"
     BoxLayout:
@@ -16,6 +19,7 @@ WindowManager:
         orientation: 'vertical'
 
         Label:
+            
             text: "Username"
             font_size: 25
             size: self.texture_size
@@ -27,6 +31,7 @@ WindowManager:
             text: "Enter Username"
             
         Label:
+            
             text: "Password"
             font_size: 25
             size: self.texture_size
@@ -39,6 +44,7 @@ WindowManager:
             id: PasswordBox 
 
         Button:
+            
             text: "Submit"
             font_size: 25
             size: self.texture_size
@@ -48,7 +54,7 @@ WindowManager:
 
         
 
-
+#MainSelectScreen has buttons for each screen you may want to go to.
 <MainSelectScreen>:
     name: "MainSelectScreen"
     BoxLayout:
@@ -71,7 +77,7 @@ WindowManager:
             text: "Delete Question"
             on_press: root.delQuestion()
 
-
+#AddQuestionScreen supports a box for your question, its answer and then a submit.
 <AddQuestionScreen>:
     name: "AddQuestionScreen"
     BoxLayout:
@@ -108,29 +114,7 @@ WindowManager:
         orientation: 'vertical'
         Label:
             text: "Delete"
-		Button:
-            id: btn
-            text: 'Press'
-            on_release: dropdown.open(self)
-            
-
-            height: '48dp'
-
-		DropDown:
-            id: dropdown
-            Button:
-                text: "Question1"
-                size_hint_y: None
-                height: 44
-                
-            Label:
-                text: 'Unselectable item'
-                size_hint_y: None
-                height: 44
-            Button:
-                text: "Question2"
-                size_hint_y: None
-                height: 44
+		
 
 <AnsweringScreen>:
     name: "AnsweringScreen"
@@ -160,7 +144,14 @@ WindowManager:
                 on_press: root.checkAns("3")
 
         
-
+<ErrorScreen>:
+    name:"ErrorScreen"
+    BoxLayout:
+        spacing: '0'
+        position_hint: {'center_x':0.5, 'center_y':0.5}
+        orientation: 'vertical'
+        Label:
+            text:"Error, Please Restart Application"
     
         
 
