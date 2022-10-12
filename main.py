@@ -1,5 +1,9 @@
 
 import sys
+
+sys.path.append("\\johnmason\\jmshome\\Students\\16pratte\\Desktop\\NEA\\Packages\\Packages")
+print(sys.path)
+import configparser
 from ast import main
 from multiprocessing import Manager
 import kivy
@@ -16,23 +20,27 @@ from kivy.properties import ObjectProperty, ListProperty, StringProperty
 from kivy.lang.builder import Builder
 from kivy.uix.dropdown import DropDown
 from kivy.uix.button import Button
+from kivy.uix.spinner import Spinner
 import mysql.connector
 import random
+import atexit
 
+def exitClose():
+    cnx.close()
 
+atexit.register(exitClose)
 # Window.size = (1920,1080)
 
 #Stores database login
-databaseConfig = {
-    'user': 'MobileRevisionApp',
-    'password': '3EhaR02J0*Vg',
-    'host': '82.14.184.252',
-    'port': '3306',
-    'database': 'mobileapp',
-    'raise_on_warnings': True
-}
+config = configparser.ConfigParser()
+config.read('config.ini')
 #Opens Connection to Database
-cnx = mysql.connector.connect(**databaseConfig)
+cnx = mysql.connector.connect(host = config['Credentials']['host'],
+password=config['Credentials']['password'],
+user=config['Credentials']['user'],
+port=config['Credentials']['port'],
+database=config['Credentials']['database'],
+raise_on_warnings=config['Credentials']['warnings'])
 
 
 
@@ -173,7 +181,7 @@ class AddQuestionScreen(Screen):
     pass
 #Class for deleting the questions
 class DeleteQuestionScreen(Screen):
-    pass
+    
     def retrieveQuestions(self):
         
         cursor = cnx.cursor()
@@ -186,20 +194,19 @@ class DeleteQuestionScreen(Screen):
         cursor.close()
         
 
-        self.dropdown = DropDown()
-        for question in questions:
-            print(question)
-            btn = Button(text=str(question), size_hint_y=0, height=20)
-            btn.bind(on_release=lambda btn:self.dropdown.select(btn.text))
-            self.dropdown.add_widget(Button)
-            self.ids.button_release.bind(on_release=self.dropdown.open)
-    
-    def on_enter(self):
-        self.retrieveQuestions()
-      
+#        self.dropdown = DropDown()
+#        for question in questions:
+#            btn = Button(text=question, size_hint_y=0, height=20)
+#            btn.bind(on_release=lambda btn:self.dropdown.select(btn.text))
+#            self.dropdown.add_widget(Button)
+#            self.ids.button_release.bind(on_release=self.dropdown.open)
 
-class ErrorScreen(Screen):
-    pass
+    def deleteQuestions(self):
+        cursor = cnx.cursor()
+        query = ("DELETE FROM questions WHERE question= %s")
+        cursor.execute(query, self.ids.SpinnerSelect.text)
+        cursor.commit()
+        cursor.close()
 
 #Class that contains the manager for all seperate screens
 class WindowManager(ScreenManager):
@@ -223,7 +230,7 @@ class MobileApp(App):
         super(MobileApp, self).__init__(**kwargs)
         Window.bind(on_keyboard=self._key_handler)
     #If escape or back is pressed run set_previous_screen
-    def _key_handler(self, instance, key, *args):
+    def _key_handler(self, instance, key, *args): 
         if key is 27:
             self.set_previous_screen()
             return True
@@ -246,3 +253,6 @@ class MobileApp(App):
 if __name__ == '__main__':
     
     MobileApp().run()
+
+
+
