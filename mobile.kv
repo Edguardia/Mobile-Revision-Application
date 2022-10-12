@@ -19,7 +19,7 @@ WindowManager:
         orientation: 'vertical'
 
         Label:
-            text_size: self.size
+            
             text: "Username"
             font_size: 25
             size: self.texture_size
@@ -31,7 +31,7 @@ WindowManager:
             text: "Enter Username"
             
         Label:
-            text_size: self.size
+            
             text: "Password"
             font_size: 25
             size: self.texture_size
@@ -44,7 +44,7 @@ WindowManager:
             id: PasswordBox 
 
         Button:
-            text_size: self.size
+            
             text: "Submit"
             font_size: 25
             size: self.texture_size
@@ -116,9 +116,8 @@ WindowManager:
             text: "Delete"
 
 		Spinner:
-            id:text
+            id:spinner
             text: "Select Question"
-            values: root.questions
         
         Button:
             bold: True
@@ -154,7 +153,7 @@ WindowManager:
                 on_press: root.checkAns("3")
 
         
-ErrorScreen:
+<ErrorScreen>:
     BoxLayout:
         spacing: '0'
         position_hint: {'center_x':0.5, 'center_y':0.5}

@@ -25,25 +25,26 @@ import mysql.connector
 import random
 import atexit
 
-def exitClose():
-    cnx.close()
 
-atexit.register(exitClose)
 # Window.size = (1920,1080)
 
 #Stores database login
 config = configparser.ConfigParser()
 config.read('config.ini')
 #Opens Connection to Database
-cnx = mysql.connector.connect(host = config['Credentials']['host'],
+cnx = mysql.connector.connect(host = config.get('Credentials', 'host'),
 password=config['Credentials']['password'],
 user=config['Credentials']['user'],
-port=config['Credentials']['port'],
+port=config.getint('Credentials', 'port'),
 database=config['Credentials']['database'],
-raise_on_warnings=config['Credentials']['warnings'])
+raise_on_warnings=config.getboolean('Credentials', 'warnings')
+)
 
 
+def exitClose():
+    cnx.close()
 
+atexit.register(exitClose)
 
 #Gets login information from database and stores to lists
 
@@ -183,31 +184,33 @@ class AddQuestionScreen(Screen):
 class DeleteQuestionScreen(Screen):
     
     def retrieveQuestions(self):
-        
+        self.ids.values = ""
         cursor = cnx.cursor()
         query = ("SELECT question from questions")
         cursor.execute(query)
         questions = []
         for question in cursor:
             questions.append(question)
-
         cursor.close()
-        
+        for i in range (0, len(questions)):
+            questions1 = questions[i]
+            self.ids.spinner.values.append(str(questions1))
 
-#        self.dropdown = DropDown()
-#        for question in questions:
-#            btn = Button(text=question, size_hint_y=0, height=20)
-#            btn.bind(on_release=lambda btn:self.dropdown.select(btn.text))
-#            self.dropdown.add_widget(Button)
-#            self.ids.button_release.bind(on_release=self.dropdown.open)
 
     def deleteQuestions(self):
         cursor = cnx.cursor()
-        query = ("DELETE FROM questions WHERE question= %s")
-        cursor.execute(query, self.ids.SpinnerSelect.text)
+        query = ("DELETE FROM questions WHERE question= '%s'")
+        qtodelete = self.ids.spinner.text
+
+        cursor.execute(query, qtodelete)
         cursor.commit()
         cursor.close()
 
+    def on_enter(self, *args):
+        self.retrieveQuestions()
+
+class ErrorScreen(Screen):
+    pass
 #Class that contains the manager for all seperate screens
 class WindowManager(ScreenManager):
     
