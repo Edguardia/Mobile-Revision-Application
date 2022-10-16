@@ -7,9 +7,12 @@ WindowManager:
     DeleteQuestionScreen:
     AnsweringScreen:
     ErrorScreen:
+    CorrectAnswer:
+    IncorrectAnswer:
 
 #LoginScreen has a button and two inputs for your username and password
 <LoginScreen>:
+    id: LoginScreen
     name: "LoginScreen"
     BoxLayout:
         
@@ -56,6 +59,7 @@ WindowManager:
 
 #MainSelectScreen has buttons for each screen you may want to go to.
 <MainSelectScreen>:
+    id:MainSelectScreen
     name: "MainSelectScreen"
     BoxLayout:
         spacing: '0'
@@ -79,6 +83,7 @@ WindowManager:
 
 #AddQuestionScreen supports a box for your question, its answer and then a submit.
 <AddQuestionScreen>:
+    id: AddQuestionScreen
     name: "AddQuestionScreen"
     BoxLayout:
         spacing: '0'
@@ -107,6 +112,7 @@ WindowManager:
             on_press: root.uploadQuestion()
 
 <DeleteQuestionScreen>:
+    id: DeleteQuestionScreen
     name: "DeleteQuestionScreen"
 	BoxLayout:
         spacing: '0'
@@ -126,6 +132,7 @@ WindowManager:
             on_press:root.deleteQuestions()
 
 <AnsweringScreen>:
+    id: AnsweringScreen
     name: "AnsweringScreen"
     BoxLayout:
         spacing: '0'
@@ -154,6 +161,7 @@ WindowManager:
 
         
 <ErrorScreen>:
+    id:ErrorScreen
     BoxLayout:
         spacing: '0'
         position_hint: {'center_x':0.5, 'center_y':0.5}
@@ -161,9 +169,31 @@ WindowManager:
         Label:
             text:"Error, Please Restart Application"
     
-        
+
+
+
+<CorrectAnswer>:
+    id: CorrectAnswer
+    name: "CorrectAnswer"
+    BoxLayout:
+        Label:
+            text:"You got the correct answer"
+
+        Label:
+            id: UsersScore
+
+<IncorrectAnswer>:
+    id: IncorrectAnswer
+    name: "IncorrectAnswer"
+    BoxLayout:
+        Label:
+            text:"You got the answer wrong"
+        Label:
+            id:AnswerLabel
+                
 
 <FailedAuthentication>
+    id:FailedAuthentication
     name: "FailedAuthentication"
 
     BoxLayout:

@@ -126,7 +126,7 @@ class AnsweringScreen(Screen):
         questionSelected = random.randrange(0, len(questions))
         
         self.ids.questiontoAnswer.text = str(questions[questionSelected])
-        
+        global correctAnswer
         correctAnswer = str(quesansDict[questions[questionSelected]])
         #Selects 4 other multi choice answers
         for i in range(0,4):
@@ -139,10 +139,8 @@ class AnsweringScreen(Screen):
     #Checks if the sumbitted answer is the correct answer
     def checkAns(self, button):
         
-        if self.ids[group[int(button)]].text == AnsweringScreen.getQuestion.correctAnswer:
-            userScore == 0
-            userScore+=1
-            print(userScore)
+        if self.ids[group[int(button)]].text == correctAnswer:
+            self.manager.current = "CorrectAnswer"
         else:
             print("Incorrect Answer")
             pass
@@ -161,6 +159,46 @@ class AnsweringScreen(Screen):
 
 
     pass
+
+
+class CorrectAnswer(Screen):
+    def increaseUserScore(self):
+        cursor = cnx.cursor()
+        usersName = self.manager.screens[0].ids.UsernameBox.text
+        query = ("SELECT usersScore FROM user WHERE username='%s'" % usersName)
+        cursor.execute(query)
+        usersCurrentScore = int(cursor.fetchone()[0])
+        usersCurrentScore +=1
+        usertext = ("Your current score is:", usersCurrentScore)
+        self.ids.UsersScore.text = str(usertext)
+
+        query = ("UPDATE user SET usersScore = %s WHERE username=%s")
+        val = (usersCurrentScore, usersName)
+        cursor.execute(query, val)
+        cnx.commit()
+        print(cursor.rowcount, "record(s) affected")
+        cursor.close()
+
+
+    def backToAnswer(self, dt):
+        self.manager.current="AnsweringScreen"
+
+
+    def on_enter(self, *args):
+        self.increaseUserScore()
+        Clock.schedule_once(self.backToAnswer, 5)
+
+class IncorrectAnswer(Screen):
+    def updateIncorrectAnswer(self):
+        self.ids.AnswerLabel.text = AnsweringScreen.getQuestion.correctAnswer
+
+
+    def on_enter(self, *args):
+        self.updateIncorrectAnswer()
+
+
+
+
 
 
 #Class for the screen where you add questions
@@ -189,9 +227,12 @@ class DeleteQuestionScreen(Screen):
         query = ("SELECT question from questions")
         cursor.execute(query)
         questions = []
+
         for question in cursor:
+            question = str(question).strip("()',")
             questions.append(question)
         cursor.close()
+        self.ids.spinner.values = ""
         for i in range (0, len(questions)):
             questions1 = questions[i]
             self.ids.spinner.values.append(str(questions1))
@@ -199,11 +240,11 @@ class DeleteQuestionScreen(Screen):
 
     def deleteQuestions(self):
         cursor = cnx.cursor()
-        query = ("DELETE FROM questions WHERE question= '%s'")
-        qtodelete = self.ids.spinner.text
+        query = ("DELETE FROM questions WHERE question= %s")
+        qtodelete = [(self.ids.spinner.text)]
 
         cursor.execute(query, qtodelete)
-        cursor.commit()
+        cnx.commit()
         cursor.close()
 
     def on_enter(self, *args):
