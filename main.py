@@ -1,8 +1,5 @@
 
 import sys
-
-sys.path.append("\\johnmason\\jmshome\\Students\\16pratte\\Desktop\\NEA\\Packages\\Packages")
-print(sys.path)
 import configparser
 from ast import main
 from multiprocessing import Manager
@@ -21,14 +18,15 @@ from kivy.lang.builder import Builder
 from kivy.uix.dropdown import DropDown
 from kivy.uix.button import Button
 from kivy.uix.spinner import Spinner
+import kivy.utils
 import mysql.connector
 import random
 import atexit
 
-
-# Window.size = (1920,1080)
+#Window.size = (1920,1080)
 
 #Stores database login
+
 config = configparser.ConfigParser()
 config.read('config.ini')
 #Opens Connection to Database
@@ -40,33 +38,33 @@ database=config['Credentials']['database'],
 raise_on_warnings=config.getboolean('Credentials', 'warnings')
 )
 
-
+#On program exit closes the connection with database saving resources on hosting device
 def exitClose():
     cnx.close()
+
 
 atexit.register(exitClose)
 
 #Gets login information from database and stores to lists
 
-cursor = cnx.cursor()
 
-query = ("SELECT username, password FROM user")
-cursor.execute(query)
-usernames = []
-passwords = []
-for (username, password) in cursor:
-    usernames.append(username)
-    passwords.append(password)
-
-    
-
-cursor.close()
 
 #Class for the login screen which contains functions to check your username and password
 class LoginScreen(Screen):
     
 #Checks password inputted against stored list
     def login(self):
+        cursor = cnx.cursor()
+        query = ("SELECT username, password FROM user")
+        cursor.execute(query)
+        usernames = []
+        passwords = []
+        for (username, password) in cursor:
+            usernames.append(username)
+            passwords.append(password)
+        cursor.close()
+
+        #Checks text of box against list of downloaded usernames
         if self.ids.UsernameBox.text in usernames:
             if self.ids.PasswordBox.text in passwords:
                 print("Authenticated")
@@ -80,8 +78,23 @@ class LoginScreen(Screen):
         
     def loginReset(self, dt):
         self.manager.current = "LoginScreen"
+    
+    def toRegister(self):
+        self.manager.current = "RegisterScreen"
 
     
+    pass
+#Class for creating new users
+class RegisterScreen(Screen):
+    def registerUser(self):
+        newUsername = self.ids.newUsername.text
+        newPassword = self.ids.newPassword.text
+        cursor = cnx.cursor
+        query = ("INSERT INTO user (username, password) VALUES (%s, %s)" % newUsername, newPassword)
+        cursor.execute(query)#Runs query to update database with new user credentials
+        cnx.commit()
+        cursor.close()
+        self.manager.current = "LoginScreen"
     pass
 
 
@@ -95,6 +108,9 @@ class MainSelectScreen(Screen):
     
     def answerQuestion(self): #Selects screen to answer questions
         self.manager.current = "AnsweringScreen"
+
+    def leaderboardScreen(self):
+        self.manager.current = "LeaderBoard"
     pass
 
 #Empty Screen Class for failed authentication
@@ -124,6 +140,7 @@ class AnsweringScreen(Screen):
         
         quesansDict = dict(zip(questions, answers))
         questionSelected = random.randrange(0, len(questions))
+        #questionSelected = random.sample(range(len(questions)), 4)
         
         self.ids.questiontoAnswer.text = str(questions[questionSelected])
         global correctAnswer
@@ -143,26 +160,20 @@ class AnsweringScreen(Screen):
             self.manager.current = "CorrectAnswer"
         else:
             print("Incorrect Answer")
+            self.manager.current = "IncorrectAnswer"
             pass
         
-    
-
-
         
-
     #Makes sure that the getQuestion function runs whenever the screen in selected
     def on_enter(self):
         self.getQuestion()
        
 
-    
-
-
     pass
 
-
+#Displays and updates the users current score
 class CorrectAnswer(Screen):
-    def increaseUserScore(self):
+    def increaseUserScore(self): #Retrieves current user score
         cursor = cnx.cursor()
         usersName = self.manager.screens[0].ids.UsernameBox.text
         query = ("SELECT usersScore FROM user WHERE username='%s'" % usersName)
@@ -170,10 +181,10 @@ class CorrectAnswer(Screen):
         usersCurrentScore = int(cursor.fetchone()[0])
         usersCurrentScore +=1
         usertext = ("Your current score is:", usersCurrentScore)
-        self.ids.UsersScore.text = str(usertext)
+        self.ids.UsersScore.text = str(usertext) #Outputs users new score
 
         query = ("UPDATE user SET usersScore = %s WHERE username=%s")
-        val = (usersCurrentScore, usersName)
+        val = (usersCurrentScore, usersName)#Updates database with users new score
         cursor.execute(query, val)
         cnx.commit()
         print(cursor.rowcount, "record(s) affected")
@@ -188,13 +199,20 @@ class CorrectAnswer(Screen):
         self.increaseUserScore()
         Clock.schedule_once(self.backToAnswer, 5)
 
+
+#Class for if user gets incorrect answer
 class IncorrectAnswer(Screen):
     def updateIncorrectAnswer(self):
-        self.ids.AnswerLabel.text = AnsweringScreen.getQuestion.correctAnswer
+        self.ids.AnswerLabel.text = correctAnswer
+    
+    
+    def backToAnswer(self, dt):
+        self.manager.current="AnsweringScreen"
 
-
+    
     def on_enter(self, *args):
         self.updateIncorrectAnswer()
+        Clock.schedule_once(self.backToAnswer, 5)
 
 
 
@@ -222,19 +240,20 @@ class AddQuestionScreen(Screen):
 class DeleteQuestionScreen(Screen):
     
     def retrieveQuestions(self):
-        self.ids.values = ""
+        #Gets all question names
+        self.ids.values = "" #Empties the list of questions before reappending
         cursor = cnx.cursor()
         query = ("SELECT question from questions")
         cursor.execute(query)
         questions = []
-
+        
+        #Adds question names to dropdown
         for question in cursor:
-            question = str(question).strip("()',")
             questions.append(question)
         cursor.close()
         self.ids.spinner.values = ""
         for i in range (0, len(questions)):
-            questions1 = questions[i]
+            questions1 = questions[i][0]
             self.ids.spinner.values.append(str(questions1))
 
 
@@ -253,6 +272,29 @@ class DeleteQuestionScreen(Screen):
 class ErrorScreen(Screen):
     pass
 #Class that contains the manager for all seperate screens
+
+class LeaderBoard(Screen):
+    def on_enter(self, *args):
+        userDataUnsorted = []
+        cursor = cnx.cursor()
+        query = ("SELECT username, UsersScore FROM user")
+        cursor.execute(query)
+        for row in cursor:
+            userDataUnsorted.append(row)
+        cursor.close()
+        print(userDataUnsorted)
+        userDataSorted = sorted(userDataUnsorted, key=lambda x:x[1], reverse=True)
+        LeaderBoardList = self.ids.LeaderBoardList
+        for i in range(len(userDataSorted)):
+            for j in range(2):
+                label = Label(text=str(userDataSorted[i][j]))
+                LeaderBoardList.add_widget(label)
+        
+    pass
+
+
+
+
 class WindowManager(ScreenManager):
     
     
@@ -273,16 +315,20 @@ class MobileApp(App):
     def __init__(self, **kwargs):
         super(MobileApp, self).__init__(**kwargs)
         Window.bind(on_keyboard=self._key_handler)
-    #If escape or back is pressed run set_previous_screen
+    #If escape or back is pressed run set_previous_screen, ESC is key 27
     def _key_handler(self, instance, key, *args): 
-        if key is 27:
+        if key == 27:
             self.set_previous_screen()
             return True
+    
     #Changes screen to go back to main select screen or to login screen
     def set_previous_screen(self):
-        if sm.current == "MainSelectScreen" or sm.current == "FailedAuthentication":
+        if sm.current == "MainSelectScreen" or sm.current == "FailedAuthentication": #Stops bypassing login screen
             sm.direction = "left"
-            sm.current ="LoginScreen"
+            sm.current = "LoginScreen"
+
+        elif sm.current == "LoginScreen":
+            quit()
 
         elif sm.current != "LoginScreen":
             sm.direction = "left"

@@ -1,3 +1,7 @@
+#Imports
+#:import utils kivy.utils
+
+
 #WindowManager houses all the screens and allows for changing between them
 WindowManager:
     LoginScreen:
@@ -9,9 +13,16 @@ WindowManager:
     ErrorScreen:
     CorrectAnswer:
     IncorrectAnswer:
+    RegisterScreen:
+    LeaderBoard:
+
+
+
+
 
 #LoginScreen has a button and two inputs for your username and password
 <LoginScreen>:
+    background_color: utils.get_color_from_hex('#1BFF00')
     id: LoginScreen
     name: "LoginScreen"
     BoxLayout:
@@ -22,38 +33,76 @@ WindowManager:
         orientation: 'vertical'
 
         Label:
-            
+            font_size:
             text: "Username"
-            font_size: 25
+            font_size: 40
             size: self.texture_size
             
         TextInput:
             id: UsernameBox
             width: 100
-            height: 50
-            text: "Enter Username"
+            height: 30
+            hint_text: "Enter Username"
             
-        Label:
-            
+        Label: 
             text: "Password"
             font_size: 25
             size: self.texture_size
             
         TextInput:
-            
             width: 100
-            height: 50
-            text: "Enter Password"
+            height: 30
+            hint_text: "Enter Password"
             id: PasswordBox 
 
         Button:
-            
+            text: "Register New User"
+            font_size: 40
+            size: self.texture_size
+            on_press:
+                root.toRegister()
+        Button:
             text: "Submit"
-            font_size: 25
+            font_size: 40
             size: self.texture_size
             on_press:
                 root.login()
-                
+
+
+
+
+<RegisterScreen>:
+    id:RegisterScreen
+    name: "RegisterScreen"
+    BoxLayout:
+        spacing: '0'
+        orientation: 'vertical'
+        position_hint: {'center_x':0.5, 'center_y':0.5}
+
+        Label:
+            text: "New Username"
+
+        TextInput:
+            hint_text: "Username"
+            width: 100
+            height: 30
+            id: newUsername
+
+        Label:
+            text: "New Password"
+        
+        TextInput:
+            hint_text: "Password"
+            width: 100
+            height: 30
+            id: newPassword
+        
+        Button:
+            text: "Submit"
+            font_size: 40
+            size: self.texture_size
+            on_press:
+                root.registerUser()
 
         
 
@@ -81,6 +130,10 @@ WindowManager:
             text: "Delete Question"
             on_press: root.delQuestion()
 
+        Button:
+            text: "LeaderBoard"
+            on_press: root.leaderboardScreen()
+
 #AddQuestionScreen supports a box for your question, its answer and then a submit.
 <AddQuestionScreen>:
     id: AddQuestionScreen
@@ -89,22 +142,25 @@ WindowManager:
         spacing: '0'
         position_hint: {'center_x':0.5, 'center_y':0.5}
         orientation: 'vertical'
+
         Label:
             text:'What is the question?'
+
         TextInput:
             id: QuestionBox
             width: 100
             height: 50
-            text: "Enter Question"
+            hint_text: "Enter Question"
             
 
         Label:
             text: "What is the answer"
+            
         TextInput:
             id: AnswerBox
             width: 100
             height: 50
-            text:'Enter Answer'
+            hint_text:'Enter Answer'
             
 
         Button:
@@ -123,7 +179,7 @@ WindowManager:
 
 		Spinner:
             id:spinner
-            text: "Select Question"
+            text: "Click to Select Question to delete"
         
         Button:
             bold: True
@@ -176,7 +232,11 @@ WindowManager:
     id: CorrectAnswer
     name: "CorrectAnswer"
     BoxLayout:
+        orientation: 'vertical'
+        spacing: '0'
+        position_hint: {'center_x':0.5, 'center_y':0.5}
         Label:
+            background_color: 
             text:"You got the correct answer"
 
         Label:
@@ -186,10 +246,28 @@ WindowManager:
     id: IncorrectAnswer
     name: "IncorrectAnswer"
     BoxLayout:
+        orientation: 'vertical'
+        spacing: '0'
+        position_hint: {'center_x':0.5, 'center_y':0.5}
         Label:
             text:"You got the answer wrong"
         Label:
             id:AnswerLabel
+
+
+
+<LeaderBoard>:
+    id: LeaderBoard
+    name: "LeaderBoard"
+    ScrollView:
+        GridLayout:
+            cols:2
+            padding: 10
+            spacing: 10
+            height: self.minimum_height
+            do_scroll_x: False
+            id: LeaderBoardList
+
                 
 
 <FailedAuthentication>
